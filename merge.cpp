@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QSet>
+#include <QException>
 
 using namespace cv;
 using namespace std;
@@ -1527,29 +1528,31 @@ Merge::Merge()
     bStandard=false;
     bSection=false;
     perc = 0.0;
-
-    loadGradientImages();
 }
 
 /**
  * @brief Load gradient images from resource directory
  * @return -1 if an error occured
  */
-int Merge::loadGradientImages()
+void Merge::loadGradientImages() throw(MergeException)
 {
     gradient = imread("rsc/gradient.png");
     if(!gradient.data)
-        return -1;
+        throw MergeException("File not found",
+                             "Can't load gradient images",
+                             "Make sure the folder /rsc exists and contains all gradient image files");
 
     gradient2 = imread("rsc/gradient2.png");
     if(!gradient2.data)
-        return -1;
+        throw MergeException("File not found",
+                             "Can't load gradient images",
+                             "Make sure the folder /rsc exists and contains all gradient image files");
 
     gradientReverse = imread("rsc/gradientReverse.png");
     if(!gradientReverse.data)
-        return -1;
-
-    return 0;
+        throw MergeException("File not found",
+                             "Can't load gradient images",
+                             "Make sure the folder /rsc exists and contains all gradient image files");
 }
 
 /**
@@ -1920,6 +1923,7 @@ int Merge::launch(SMergeOptions *options)
  * @param[in] type define the gradient to use
  * @param[in] blured blur the image
  * @param[in] caption integrate caption
+ * @param[in] ext the string to add to the output filename
  */
 void Merge::exportMapColor(Mat map, const Mat mask, const QString targetDir, const EMapType type, const bool blured, const bool caption, string ext)
 {
@@ -2064,10 +2068,10 @@ void Merge::exportOptions(SMergeOptions *options)
 
     for (QString dir : *(options->dirList))
     {
-        data->append(dir);
+        data->append(dir + " ");
     }
 
-    data->append("TARGET_DIR " + options->targetDir);
+    data->append("TARGET_DIR " + options->targetDir + " ");
 
     QString types = "MAP_TYPES ";
     for (EMapType type : *(options->mapTypes))
@@ -2076,14 +2080,14 @@ void Merge::exportOptions(SMergeOptions *options)
     }
     data->append(types);
 
-    data->append("MEAN " + QString::number(options->bAverage));
-    data->append("DEVIATION " + QString::number(options->bDeviation));
-    data->append("MEDIAN " + QString::number(options->bMedian));
+    data->append("MEAN " + QString::number(options->bAverage) + " ");
+    data->append("DEVIATION " + QString::number(options->bDeviation) + " ");
+    data->append("MEDIAN " + QString::number(options->bMedian) + " ");
 
-    data->append("STANDARDIZE " + QString::number(options->bStandardize));
-    data->append("BLUR " + QString::number(options->bBlur));
-    data->append("CAPTION " + QString::number(options->bCaption));
-    data->append("THRESHOLD " + QString::number(options->threshold));
+    data->append("STANDARDIZE " + QString::number(options->bStandardize) + " ");
+    data->append("BLUR " + QString::number(options->bBlur) + " ");
+    data->append("CAPTION " + QString::number(options->bCaption) + " ");
+    data->append("THRESHOLD " + QString::number(options->threshold) + " ");
 
     string outputName = (options->targetDir).toStdString() + "/" + "options";
 

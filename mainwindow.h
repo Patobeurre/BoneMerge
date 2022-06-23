@@ -31,6 +31,12 @@ private:
 
     Merge merge;
 
+    int searchFor(const QString str, const QList<QString>* listStr);
+    void displayErrorBox(const QString title, const QString msg, const QString details);
+
+    /**
+     * TAB MERGE
+     */
     QFileSystemModel* dirModel;
     QStringListModel* model;
 
@@ -50,7 +56,6 @@ private:
     void updateMapTypes(EMapType type, bool toAdd);
     void addSelectedFolder(QString dirPath);
 
-    int searchFor(const QString str, const QList<QString>* listStr);
     bool isLaunchEnable();
     bool isValidSelectedFolder(QString dirPath);
 
@@ -58,43 +63,51 @@ private:
     void loadOptions(SMergeOptions *options);
     void updateUIFromOptions(SMergeOptions* options);
 
+    /**
+     * TAB NORMALIZE
+     */
+    QStringListModel* modelNorm;
+
+    QList<QString>* dirListNorm;
+    QString saveDirNorm;
+
+    void addSelectedFolderNorm(QString dirPath);
+
+    bool isLaunchNormEnable();
+    bool isValidSelectedFolderNorm(QString dirPath);
+
 private slots:
+    /**
+     * UI TAB MERGE
+     */
     void on_btnAddFolder_clicked();
-
     void on_btnRemoveFolder_clicked();
-
     void on_btnBrowseSaveDir_clicked();
-
     void on_cbAverage_toggled(bool checked);
-
     void on_cbDeviation_toggled(bool checked);
-
     void on_cbMedian_toggled(bool checked);
-
     void on_cbStandardize_toggled(bool checked);
-
     void on_lineEditSaveDir_editingFinished();
-
     void on_cbExtRadius_toggled(bool checked);
-
     void on_cbCorticalThick_toggled(bool checked);
-
     void on_cbExtCurv_toggled(bool checked);
-
     void on_cbSecondMomentArea_toggled(bool checked);
-
     void on_cbModulus_toggled(bool checked);
-
     void on_btnLaunch_clicked();
-
     void on_sbThreshold_valueChanged(const QString &arg1);
-
     void on_cbBlur_toggled(bool checked);
-
     void on_cbCaption_toggled(bool checked);
 
     void on_btnLoadOptions_clicked();
     void on_btnTEST_clicked();
+
+    /**
+     * UI TAB NORMALIZE
+     */
+    void on_btnAddFolderNorm_clicked();
+    void on_btnRemoveFolderNorm_clicked();
+    void on_btnBrowseSaveDirNorm_clicked();
+    void on_btnLaunchNorm_clicked();
 };
 
 #endif // MAINWINDOW_H

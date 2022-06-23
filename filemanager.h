@@ -28,7 +28,9 @@ public:
     /// Import a map and his mask from file
     static QList<cv::Mat*>* importMapWithMask(const std::string filepath);
 
+    /// Write a list of QString in file
     static bool writeInFile(const QList<QString>* data, const std::string filepath);
+    /// Read a list of QString from file
     static QList<QStringList> readFromFile(const std::string filepath);
 };
 

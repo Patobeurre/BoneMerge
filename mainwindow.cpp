@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QDebug>
+#include <QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -18,7 +19,20 @@ MainWindow::MainWindow(QWidget *parent) :
     bBlur = bCaption = false;
     threshold = 1;
 
-    merge = Merge();
+    dirListNorm = new QList<QString>();
+    saveDirNorm = "";
+
+    try
+    {
+        merge = Merge();
+        merge.loadGradientImages();
+    }
+    catch (MergeException &e)
+    {
+        displayErrorBox(QString::fromStdString(e.getTitle()),
+                        QString::fromStdString(e.getMessage()),
+                        QString::fromStdString(e.getDetails()));
+    }
 
     dirModel = new QFileSystemModel(this);
     dirModel->setRootPath(QDir::rootPath());
@@ -27,13 +41,23 @@ MainWindow::MainWindow(QWidget *parent) :
     model = new QStringListModel(this);
     ui->listSelectedFolders->setModel(model);
 
+    modelNorm = new QStringListModel(this);
+    ui->listSelectedFoldersNorm->setModel(modelNorm);
+
     ui->treeSelectFolder->setModel(dirModel);
     ui->treeSelectFolder->setColumnHidden(1,true);
     ui->treeSelectFolder->setColumnHidden(2,true);
     ui->treeSelectFolder->setColumnHidden(3,true);
     ui->treeSelectFolder->setSelectionMode(QAbstractItemView::MultiSelection);
 
+    ui->treeSelectFolderNorm->setModel(dirModel);
+    ui->treeSelectFolderNorm->setColumnHidden(1,true);
+    ui->treeSelectFolderNorm->setColumnHidden(2,true);
+    ui->treeSelectFolderNorm->setColumnHidden(3,true);
+    ui->treeSelectFolderNorm->setSelectionMode(QAbstractItemView::MultiSelection);
+
     ui->btnLaunch->setEnabled(false);
+    ui->btnLaunchNorm->setEnabled(false);
 
     updateThresholdMax();
 }
@@ -43,6 +67,26 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/**
+ * @brief Display an error message window
+ * @param title the window's title
+ * @param msg the main message
+ * @param details the additionnal detailed message
+ */
+void MainWindow::displayErrorBox(const QString title, const QString msg, const QString details)
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(title);
+    msgBox.setText(msg);
+    msgBox.setDetailedText(details);
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
+}
+
+/**
+ * @brief Update the maximum value authorized for the threshold option
+ * @details The threshold value must be between 1 and the number of selected folders
+ */
 void MainWindow::updateThresholdMax()
 {
     int max = (dirList->isEmpty()) ? 1 : dirList->length();
@@ -215,6 +259,39 @@ void MainWindow::updateUIFromOptions(SMergeOptions *options)
     ui->sbThreshold->setValue(options->threshold);
 
     ui->btnLaunch->setEnabled(isLaunchEnable());
+}
+
+void MainWindow::addSelectedFolderNorm(QString str)
+{
+    int id = searchFor(str, dirListNorm);
+    if (id >= 0) return;
+
+    modelNorm->insertRow(modelNorm->rowCount());
+    QModelIndex index = modelNorm->index(modelNorm->rowCount() - 1);
+    modelNorm->setData(index, str);
+
+    dirListNorm->append(str);
+}
+
+bool MainWindow::isLaunchNormEnable()
+{
+    if (dirListNorm->isEmpty()) return false;
+    if (saveDirNorm.isEmpty()) return false;
+
+    return true;
+}
+
+bool MainWindow::isValidSelectedFolderNorm(QString dirPath)
+{
+    QDir dir = QDir(dirPath);
+    if (!dir.exists()) return false;
+
+    QStringList nameFilter;
+    nameFilter << "*.txt";
+
+    QFileInfoList files = dir.entryInfoList(nameFilter, QDir::Files);
+
+    return (files.count() > 0);
 }
 
 /**
@@ -435,4 +512,76 @@ void MainWindow::on_btnTEST_clicked()
 
     foreach(auto &x, files)
         qDebug() << x;
+}
+
+/**
+ * UI TAB NORMALIZE SLOTS
+ */
+
+void MainWindow::on_btnAddFolderNorm_clicked()
+{
+    QModelIndexList list = ui->treeSelectFolderNorm->selectionModel()->selectedIndexes();
+
+    for(int i = 0; i < list.length(); i += 4)
+    {
+        QString str = dirModel->filePath(list.at(i));
+
+        if(isValidSelectedFolderNorm(str))
+        {
+            addSelectedFolderNorm(str);
+        }
+        else
+        {
+            //displayErrorBox(dir0.dirName(),"Missing Files <i>.png</i> in " + str);
+            continue;
+        }
+    }
+
+    ui->treeSelectFolderNorm->clearSelection();
+    ui->btnLaunchNorm->setEnabled(isLaunchNormEnable());
+}
+
+void MainWindow::on_btnRemoveFolderNorm_clicked()
+{
+    QModelIndexList list = ui->listSelectedFoldersNorm->selectionModel()->selectedIndexes();
+
+    for(int i = 0; i < list.length(); i++)
+    {
+        QString str = list.at(i).data(Qt::DisplayRole).toString();
+        ui->listSelectedFoldersNorm->model()->removeRow(list.at(i).row());
+
+        int index = searchFor(str, dirListNorm);
+        if(index >= 0)
+        {
+            dirListNorm->removeAt(index);
+        }
+    }
+
+    ui->btnLaunchNorm->setEnabled(isLaunchNormEnable());
+}
+
+void MainWindow::on_btnBrowseSaveDirNorm_clicked()
+{
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::Directory);
+    QString dirName;
+    dirName = dialog.getExistingDirectory();
+
+    if(dirName == "") return;
+
+    QDir dir = QDir(dirName);
+
+    saveDirNorm = dir.absolutePath();
+
+    ui->lineEditSaveDirNorm->setText(dir.absolutePath());
+    ui->btnLaunchNorm->setEnabled(isLaunchNormEnable());
+}
+
+void MainWindow::on_btnLaunchNorm_clicked()
+{
+    qDebug() << "LAUNCH" << endl;
+    if (!isLaunchNormEnable()) return;
+
+    qDebug() << "normalize" << endl;
+    merge.normalizeGroup(dirListNorm, saveDirNorm);
 }
