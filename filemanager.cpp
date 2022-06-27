@@ -31,7 +31,7 @@ bool FileManager::exportMap(const Mat map, const string filepath)
             for (int i = 0; i < map.cols; i++)
             {
                 float val = map.at<float>(j, i);
-                if (val > 0)
+                if (val > MASK_MIN)
                     out << map.at<float>(j, i) << " ";
                 else
                     out << "none" << " ";
@@ -51,7 +51,7 @@ bool FileManager::exportMap(const Mat map, const string filepath)
  * @param filepath
  * @return
  */
-QList<QStringList> FileManager::readMapFromFile(const string filepath)
+QList<QStringList> FileManager::readMapFromFile(const string filepath) throw(MergeException)
 {
     QList<QStringList> mat;
 
@@ -66,6 +66,10 @@ QList<QStringList> FileManager::readMapFromFile(const string filepath)
             line = file.readLine();
         }
         file.close();
+    }
+    else
+    {
+        throw MergeException("Error", "File not found", "At location: " + filename.toStdString());
     }
 
     return mat;
@@ -129,12 +133,15 @@ QList<QStringList> FileManager::readFromFile(const string filepath)
 
     QString filename = QString::fromStdString(filepath);
     QFile file(filename);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
         QString line = file.readLine();
-        while (!line.isEmpty()) {
+        while (!line.isEmpty())
+        {
             QString s(line.data());
             QStringList sl = s.split(" ");
             data.append(sl);
+
             line = file.readLine();
         }
         file.close();

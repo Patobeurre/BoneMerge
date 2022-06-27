@@ -59,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->btnLaunch->setEnabled(false);
     ui->btnLaunchNorm->setEnabled(false);
 
+    ui->tabWidget->setCurrentIndex(0);
+
     updateThresholdMax();
 }
 
@@ -69,23 +71,20 @@ MainWindow::~MainWindow()
 
 /**
  * @brief Display an error message window
- * @param title the window's title
- * @param msg the main message
- * @param details the additionnal detailed message
+ * @param[in] title the window's title
+ * @param[in] msg the main message
+ * @param[in] details the additionnal detailed message
  */
 void MainWindow::displayErrorBox(const QString title, const QString msg, const QString details)
 {
     QMessageBox msgBox;
-    msgBox.setWindowTitle(title);
-    msgBox.setText(msg);
-    msgBox.setDetailedText(details);
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.exec();
+    msgBox.critical(0, title, msg + "\n\n" + details);
 }
 
 /**
  * @brief Update the maximum value authorized for the threshold option
- * @details The threshold value must be between 1 and the number of selected folders
+ * @details
+ * The threshold value must be between 1 and the number of selected folders
  */
 void MainWindow::updateThresholdMax()
 {
@@ -261,6 +260,10 @@ void MainWindow::updateUIFromOptions(SMergeOptions *options)
     ui->btnLaunch->setEnabled(isLaunchEnable());
 }
 
+/**
+ * @brief Add a selected folder path to the list
+ * @param[in] str
+ */
 void MainWindow::addSelectedFolderNorm(QString str)
 {
     int id = searchFor(str, dirListNorm);
@@ -348,8 +351,18 @@ void MainWindow::on_btnLaunch_clicked()
     qDebug() << "generate options" << endl;
     SMergeOptions* options = generateOptions();
 
-    qDebug() << "merge" << endl;
-    merge.launch(options);
+    try
+    {
+        qDebug() << "merge" << endl;
+        merge.launch(options);
+    }
+    catch (MergeException &e)
+    {
+        displayErrorBox(QString::fromStdString(e.getTitle()),
+                        QString::fromStdString(e.getMessage()),
+                        QString::fromStdString(e.getDetails()));
+    }
+
 }
 
 
@@ -582,6 +595,16 @@ void MainWindow::on_btnLaunchNorm_clicked()
     qDebug() << "LAUNCH" << endl;
     if (!isLaunchNormEnable()) return;
 
-    qDebug() << "normalize" << endl;
-    merge.normalizeGroup(dirListNorm, saveDirNorm);
+    try
+    {
+        qDebug() << "normalize" << endl;
+        merge.normalizeGroup(dirListNorm, saveDirNorm);
+    }
+    catch (MergeException &e)
+    {
+        displayErrorBox(QString::fromStdString(e.getTitle()),
+                        QString::fromStdString(e.getMessage()),
+                        QString::fromStdString(e.getDetails()));
+    }
+
 }

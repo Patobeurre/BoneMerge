@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "merge.h"
+#include "mergeexception.h"
 
 #include <QMainWindow>
 #include <QFileSystemModel>

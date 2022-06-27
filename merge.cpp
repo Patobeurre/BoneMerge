@@ -958,13 +958,11 @@ QList<QList<float> > Merge::launchRatio(int id,int section)
 
         }
 
-
-
         float stand=1.0;
         if(bStandard)
             stand=ma;
-        Mat* img = GetMapFromTxt(dirMaps.absolutePath() + "/" + chooseFile(id), stand);
 
+        Mat* img = GetMapFromTxt(dirMaps.absolutePath() + "/" + chooseFile(id), stand);
 
 
         QList<float> val;
@@ -1532,7 +1530,7 @@ Merge::Merge()
 
 /**
  * @brief Load gradient images from resource directory
- * @return -1 if an error occured
+ * @throw MergeException if file not found
  */
 void Merge::loadGradientImages() throw(MergeException)
 {
@@ -1601,7 +1599,7 @@ void Merge::getMinMaxMat(const Mat *mat, const Mat *mask, float *min, float *max
 
     for (int j = 0; j < mat->rows; j++)
     {
-        if (mask->at<float>(j, 0) <= 0)
+        if (mask->at<float>(j, 0) <= MASK_MIN)
             continue;
 
         for (int i = 0; i < mat->cols; i++)
@@ -1623,7 +1621,7 @@ void Merge::getMinMaxMat(const Mat *mat, const Mat *mask, float *min, float *max
  * @param[out] maxGrp
  * @param[in] type
  */
-void Merge::getMinMaxGroup(const QList<QString> *directories, float *minGrp, float *maxGrp, const QString filename)
+void Merge::getMinMaxGroup(const QList<QString> *directories, float *minGrp, float *maxGrp, const QString filename) throw(MergeException)
 {
     for(QString dir : *(directories))
     {
@@ -1754,7 +1752,7 @@ void Merge::sumMat(Mat* sumMat, Mat* weight, const Mat* mat, const Mat* mask)
  * @param[in] norm set it to true if each map has to be normalized between 0 and 1
  * @return a list which contains the mean map and it's mask
  */
-QList<Mat>* Merge::meanMat(const QList<QString>* directories, const int threshold, const EMapType type)
+QList<Mat>* Merge::meanMat(const QList<QString>* directories, const int threshold, const EMapType type) throw(MergeException)
 {
     cout << "MEAN" << endl;
     Mat mapMerge(300, 360, CV_32FC1, cvScalar(0.));
@@ -1810,7 +1808,7 @@ QList<Mat>* Merge::meanMat(const QList<QString>* directories, const int threshol
  * @param[in] type the map's type
  * @return a list which contains the deviation map and it's mask
  */
-QList<Mat>* Merge::deviationMat(const QList<QString>* directories, const int threshold, const EMapType type)
+QList<Mat>* Merge::deviationMat(const QList<QString>* directories, const int threshold, const EMapType type) throw(MergeException)
 {
     QList<Mat>* mapMergeList = meanMat(directories, threshold, type);
     Mat mapMerge = mapMergeList->at(0);
@@ -1867,7 +1865,7 @@ QList<Mat>* Merge::deviationMat(const QList<QString>* directories, const int thr
  * @param[in] options
  * @return
  */
-int Merge::launch(SMergeOptions *options)
+int Merge::launch(SMergeOptions *options) throw(MergeException)
 {
     cout << "load gradient images" << endl;
 
@@ -2025,7 +2023,7 @@ QList<QString> Merge::getSimilarFilenames(const QList<QString> *directories)
  * @param directories the list of analysis directories
  * @param saveDir the path where result maps will be saved
  */
-void Merge::normalizeGroup(const QList<QString> *directories, const QString saveDir)
+void Merge::normalizeGroup(const QList<QString> *directories, const QString saveDir) throw(MergeException)
 {
     QList<QString> filenames = getSimilarFilenames(directories);
 
@@ -2099,7 +2097,7 @@ void Merge::exportOptions(SMergeOptions *options)
  * @param filepath
  * @return the merge options
  */
-SMergeOptions *Merge::importOptions(const QString filepath)
+SMergeOptions *Merge::importOptions(const QString filepath) throw(MergeException)
 {
     string filename = filepath.toStdString();
     QList<QStringList> data = FileManager::readFromFile(filename);

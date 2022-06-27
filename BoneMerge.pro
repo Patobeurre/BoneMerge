@@ -22,11 +22,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     filemanager.cpp \
-    merge.cpp
+    merge.cpp \
+    mergeexception.cpp
 
 HEADERS  += mainwindow.h \
     filemanager.h \
-    merge.h
+    merge.h \
+    mergeexception.h
 
 FORMS    += mainwindow.ui
 

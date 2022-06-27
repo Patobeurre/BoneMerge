@@ -1,6 +1,8 @@
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
+#include "mergeexception.h"
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <QList>
 
@@ -22,7 +24,7 @@ public:
     /// Export a map to file
     static bool exportMap(const cv::Mat map, const std::string filepath);
     /// Read a map from file
-    static QList<QStringList> readMapFromFile(const std::string filepath);
+    static QList<QStringList> readMapFromFile(const std::string filepath) throw(MergeException);
     /// Import a map from file
     static cv::Mat* importMap(const std::string filepath);
     /// Import a map and his mask from file

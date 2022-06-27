@@ -1,6 +1,8 @@
 #ifndef MERGE_H
 #define MERGE_H
 
+#include "mergeexception.h"
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -69,25 +71,6 @@ namespace MergeUtils {
         bool bBlur;
         bool bCaption;
         int threshold;
-    };
-
-    class MergeException: public std::exception
-    {
-    public:
-        explicit MergeException(const char* message): msg_(message) { }
-        explicit MergeException(const std::string& message): msg_(message) {}
-        MergeException(const std::string& title,
-                       const std::string& message,
-                       const std::string details): msg_(message), title_(title), details_(details) {}
-        virtual ~MergeException() throw () {}
-        virtual const char* what() const throw () { return msg_.c_str(); }
-        std::string getTitle() { return title_; }
-        std::string getMessage() { return msg_; }
-        std::string getDetails() { return details_; }
-    protected:
-        std::string title_;
-        std::string details_;
-        std::string msg_;
     };
 }
 using namespace MergeUtils;
@@ -159,13 +142,13 @@ public:
     Mat mapToColorGradient(const Mat* mapRaw, const Mat* gradient);
     Mat mapToColorGradientWithMask(const Mat* mapRaw, const Mat* gradient, const Mat* mask);
 
-    int launch(SMergeOptions* options);
+    int launch(SMergeOptions* options) throw(MergeException);
 
     void exportOptions(SMergeOptions* options);
-    SMergeOptions* importOptions(const QString filepath);
+    SMergeOptions* importOptions(const QString filepath) throw(MergeException);
 
     QList<QString> getSimilarFilenames(const QList<QString>* directories);
-    void normalizeGroup(const QList<QString>* directories, const QString saveDir);
+    void normalizeGroup(const QList<QString>* directories, const QString saveDir) throw(MergeException);
 
 
 private:
@@ -209,10 +192,10 @@ private:
     void sumMat(Mat* sumMat, Mat* weight, const Mat* mat, const Mat* mask);
     void normalizeMat(Mat src, Mat* dst, const Mat* mask, float newMin, float newMax);
     void getMinMaxMat(const Mat* mat, const Mat* mask, float* min, float* max);
-    void getMinMaxGroup(const QList<QString>* directories, float* min, float* max, const QString filename);
+    void getMinMaxGroup(const QList<QString>* directories, float* min, float* max, const QString filename) throw(MergeException);
 
-    QList<Mat>* meanMat(const QList<QString>* directories, const int threshold, const EMapType type);
-    QList<Mat>* deviationMat(const QList<QString>* directories, const int threshold, const EMapType type);
+    QList<Mat>* meanMat(const QList<QString>* directories, const int threshold, const EMapType type) throw(MergeException);
+    QList<Mat>* deviationMat(const QList<QString>* directories, const int threshold, const EMapType type) throw(MergeException);
 
     void addCaption(Mat map);
 
