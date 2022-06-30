@@ -34,6 +34,7 @@ private:
 
     int searchFor(const QString str, const QList<QString>* listStr);
     void displayErrorBox(const QString title, const QString msg, const QString details);
+    void displayWarningBox(const QString title, const QString msg, const QString details);
 
     /**
      * TAB MERGE
@@ -43,7 +44,6 @@ private:
 
     QList<QString>* dirList;
     QString saveDir;
-
     QList<EMapType>* mapTypes;
     bool bMedian;
     bool bAverage;
@@ -99,6 +99,7 @@ private slots:
     void on_cbBlur_toggled(bool checked);
     void on_cbCaption_toggled(bool checked);
 
+    /* TEST BTN */
     void on_btnLoadOptions_clicked();
     void on_btnTEST_clicked();
 

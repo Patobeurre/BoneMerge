@@ -9,18 +9,13 @@ using namespace std;
 using namespace cv;
 
 
-FileManager::FileManager()
-{
-
-}
-
 /**
  * @brief Export a map to the given filepath
- * @param map the matrix to export
- * @param name the filepath
+ * @param[in] map the matrix to export
+ * @param[in] filepath the absolute path of the file
  * @return
  */
-bool FileManager::exportMap(const Mat map, const string filepath)
+bool FileManager::exportMap(const Mat map, const string filepath)  throw(MergeException)
 {
     QString filename = QString::fromStdString(filepath) + ".txt";
     QFile file(filename);
@@ -42,14 +37,18 @@ bool FileManager::exportMap(const Mat map, const string filepath)
 
         return true;
     }
+    else
+    {
+        throw MergeException("Error", "Can't write in file", "At location: " + filename.toStdString());
+    }
 
     return false;
 }
 
 /**
  * @brief Read a map from the given filepath
- * @param filepath
- * @return
+ * @param[in] filepath the absolute path to file
+ * @return the map lines
  */
 QList<QStringList> FileManager::readMapFromFile(const string filepath) throw(MergeException)
 {
@@ -75,6 +74,15 @@ QList<QStringList> FileManager::readMapFromFile(const string filepath) throw(Mer
     return mat;
 }
 
+/**
+ * @brief Import a map from file associated with it's mask
+ * @details
+ * The mask share the same size and shape of the map.
+ * The value of the mask is set to 0 if the associated map's value is "none"
+ * or 255 otherwise.
+ * @param[in] filepath
+ * @return a list which contains the map and it's mask.
+ */
 QList<Mat*>* FileManager::importMapWithMask(const string filepath)
 {
     QList<QStringList> mat = readMapFromFile(filepath);

@@ -12,7 +12,7 @@ public:
     explicit MergeException(const std::string& message): msg_(message) {}
     MergeException(const std::string& title,
                    const std::string& message,
-                   const std::string& details): msg_(message), title_(title), details_(details) {}
+                   const std::string& details): title_(title), msg_(message), details_(details) {}
     virtual ~MergeException() throw () {}
     virtual const char* what() const throw () { return msg_.c_str(); }
     std::string getTitle() { return title_; }
@@ -20,8 +20,9 @@ public:
     std::string getDetails() { return details_; }
 protected:
     std::string title_;
-    std::string details_;
     std::string msg_;
+    std::string details_;
+
 };
 
 #endif // MERGEEXCEPTION_H

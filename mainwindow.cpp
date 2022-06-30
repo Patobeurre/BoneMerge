@@ -82,6 +82,18 @@ void MainWindow::displayErrorBox(const QString title, const QString msg, const Q
 }
 
 /**
+ * @brief Display a warning message window
+ * @param[in] title the window's title
+ * @param[in] msg the main message
+ * @param[in] details the additionnal detailed message
+ */
+void MainWindow::displayWarningBox(const QString title, const QString msg, const QString details)
+{
+    QMessageBox msgBox;
+    msgBox.warning(0, title, msg + "\n\n" + details);
+}
+
+/**
  * @brief Update the maximum value authorized for the threshold option
  * @details
  * The threshold value must be between 1 and the number of selected folders
@@ -353,14 +365,26 @@ void MainWindow::on_btnLaunch_clicked()
 
     try
     {
+        qDebug() << "export options" << endl;
+        merge.exportOptions(options);
+    }
+    catch (MergeException &e)
+    {
+        displayWarningBox(QString::fromStdString(e.getTitle()),
+                          QString::fromStdString(e.getMessage()),
+                          QString::fromStdString(e.getDetails()));
+    }
+
+    try
+    {
         qDebug() << "merge" << endl;
         merge.launch(options);
     }
     catch (MergeException &e)
     {
         displayErrorBox(QString::fromStdString(e.getTitle()),
-                        QString::fromStdString(e.getMessage()),
-                        QString::fromStdString(e.getDetails()));
+                      QString::fromStdString(e.getMessage()),
+                      QString::fromStdString(e.getDetails()));
     }
 
 }

@@ -8,7 +8,6 @@
 
 #include <QString>
 #include <QList>
-#include <exception>
 
 using namespace cv;
 
@@ -144,7 +143,7 @@ public:
 
     int launch(SMergeOptions* options) throw(MergeException);
 
-    void exportOptions(SMergeOptions* options);
+    void exportOptions(SMergeOptions* options) throw(MergeException);
     SMergeOptions* importOptions(const QString filepath) throw(MergeException);
 
     QList<QString> getSimilarFilenames(const QList<QString>* directories);
@@ -179,7 +178,7 @@ private:
                         const EMapType type,
                         const bool blured,
                         const bool caption,
-                        const std::string ext = "");
+                        const std::string ext = "")  throw(MergeException);
 
     void exportMapNormalized(Mat map,
                              const Mat mask,
@@ -187,7 +186,7 @@ private:
                              const EMapType type,
                              const float min,
                              const float max,
-                             const std::string ext = "");
+                             const std::string ext = "")  throw(MergeException);
 
     void sumMat(Mat* sumMat, Mat* weight, const Mat* mat, const Mat* mask);
     void normalizeMat(Mat src, Mat* dst, const Mat* mask, float newMin, float newMax);

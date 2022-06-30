@@ -1536,20 +1536,20 @@ void Merge::loadGradientImages() throw(MergeException)
 {
     gradient = imread("rsc/gradient.png");
     if(!gradient.data)
-        throw MergeException("File not found",
-                             "Can't load gradient images",
+        throw MergeException("Error",
+                             "File not found. Can't load gradient images",
                              "Make sure the folder /rsc exists and contains all gradient image files");
 
     gradient2 = imread("rsc/gradient2.png");
     if(!gradient2.data)
-        throw MergeException("File not found",
-                             "Can't load gradient images",
+        throw MergeException("Error",
+                             "File not found. Can't load gradient images",
                              "Make sure the folder /rsc exists and contains all gradient image files");
 
     gradientReverse = imread("rsc/gradientReverse.png");
     if(!gradientReverse.data)
-        throw MergeException("File not found",
-                             "Can't load gradient images",
+        throw MergeException("Error",
+                             "File not found. Can't load gradient images",
                              "Make sure the folder /rsc exists and contains all gradient image files");
 }
 
@@ -1825,7 +1825,7 @@ QList<Mat>* Merge::deviationMat(const QList<QString>* directories, const int thr
         QList<Mat*>* listImg = FileManager::importMapWithMask(filename);
 
         Mat* img = listImg->at(0);
-        Mat* mask = listImg->at(1);
+        //Mat* mask = listImg->at(1);
 
         for(int i = 0; i < mapMerge.cols; i++)
         {
@@ -1874,8 +1874,6 @@ int Merge::launch(SMergeOptions *options) throw(MergeException)
     QString targetDir = options->targetDir;
     QList<EMapType>* mapTypes = options->mapTypes;
 
-    exportOptions(options);
-
     for (EMapType type : *(mapTypes))
     {
         cout << getMapName(type) << endl;
@@ -1923,7 +1921,14 @@ int Merge::launch(SMergeOptions *options) throw(MergeException)
  * @param[in] caption integrate caption
  * @param[in] ext the string to add to the output filename
  */
-void Merge::exportMapColor(Mat map, const Mat mask, const QString targetDir, const EMapType type, const bool blured, const bool caption, string ext)
+void Merge::exportMapColor(Mat map,
+                           const Mat mask,
+                           const QString targetDir,
+                           const EMapType type,
+                           const bool blured,
+                           const bool caption,
+                           string ext)
+    throw(MergeException)
 {
     cout << "export image result" << endl;
     string outputName = targetDir.toStdString() + "/" + getMapFileName(type) + ext;
@@ -1966,11 +1971,19 @@ void Merge::exportMapColor(Mat map, const Mat mask, const QString targetDir, con
  * @param min the new min
  * @param max the new max
  */
-void Merge::exportMapNormalized(Mat map, const Mat mask, const QString targetDir, const EMapType type, const float min, const float max, string ext)
+void Merge::exportMapNormalized(Mat map,
+                                const Mat mask,
+                                const QString targetDir,
+                                const EMapType type,
+                                const float min,
+                                const float max,
+                                string ext)
+    throw (MergeException)
 {
     string outputName = targetDir.toStdString() + "/" + getMapFileName(type) + ext + EXTENSION_NORM;
 
     normalizeMat(map, &map, &mask, min, max);
+
     FileManager::exportMap(map, outputName);
 }
 
@@ -2030,7 +2043,7 @@ void Merge::normalizeGroup(const QList<QString> *directories, const QString save
     for (QString filename : filenames)
     {
         // TODO
-        float minGrp = 1000, maxGrp = 0.1;
+        float minGrp, maxGrp;
         getMinMaxGroup(directories, &minGrp, &maxGrp, filename);
 
         cout << minGrp << " " << maxGrp << endl;
@@ -2060,7 +2073,7 @@ void Merge::normalizeGroup(const QList<QString> *directories, const QString save
  * @brief Export the merge options as file
  * @param options
  */
-void Merge::exportOptions(SMergeOptions *options)
+void Merge::exportOptions(SMergeOptions *options) throw(MergeException)
 {
     QList<QString>* data = new QList<QString>();
 

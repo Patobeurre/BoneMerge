@@ -22,7 +22,7 @@ public:
     FileManager();
 
     /// Export a map to file
-    static bool exportMap(const cv::Mat map, const std::string filepath);
+    static bool exportMap(const cv::Mat map, const std::string filepath) throw(MergeException);
     /// Read a map from file
     static QList<QStringList> readMapFromFile(const std::string filepath) throw(MergeException);
     /// Import a map from file
