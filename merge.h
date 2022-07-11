@@ -105,7 +105,6 @@ public:
     QList<float> launchExtraction(QString filename,int section);
     void getMinMax(int id);
     void launchNormalized();
-    QList<QList<float> > launchRatio(int id,int section);
     void displayErrorBox(QString errorTitle, QString errorMessage);
     void setTargetDir(QString dir);
     void setGroupDir(QString dir);
@@ -148,6 +147,9 @@ public:
 
     QList<QString> getSimilarFilenames(const QList<QString>* directories);
     void normalizeGroup(const QList<QString>* directories, const QString saveDir) throw(MergeException);
+
+    void launchRatio(const QList<QString>* dirList, const QString targetDir, const QList<EMapType>* mapTypes, const bool section = false, const float secVal = 0.0);
+    QList<QList<float>> computeRatio(const QList<QString>* dirList, const EMapType type, const bool section = false, const float secVal = 0.0);
 
 
 private:

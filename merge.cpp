@@ -920,83 +920,6 @@ int Merge::launchDeviation(int id,bool _bStandard)
 }
 
 
-
-
-
-QList<QList<float> > Merge::launchRatio(int id,int section)
-{
-    QList<bool> lb;
-    QList<QList<float> > res;
-    cout << dirList->length() << endl;
-
-    for(int i=0;i<dirList->length();i++)
-    {
-        QDir dir(dirList->at(i));
-
-        QDir dirMaps = QDir(dir.path() + "/maps");
-        if(!dirMaps.exists()){
-            displayErrorBox("Folder missing","<i><b>maps</b></i> folder missing");
-            lb.append(false);
-        }
-        else
-            lb.append(true);
-
-        QDir dirSerie = QDir(dir.path() + "/serie");
-        if(!dirSerie.exists()){
-            displayErrorBox("Folder missing","<i><b>series</b></i> folder missing");
-            lb.append(false);
-        }
-        else
-            lb.append(true);
-
-        float ma=1.0;
-
-        if(bStandard)
-        {
-
-            ma=getStand(dirSerie.absolutePath().toStdString() + "/" + "stand.txt",id);
-
-        }
-
-        float stand=1.0;
-        if(bStandard)
-            stand=ma;
-
-        Mat* img = GetMapFromTxt(dirMaps.absolutePath() + "/" + chooseFile(id), stand);
-
-
-        QList<float> val;
-        float count = 0;
-        int index=int(((section/100.0)*img->rows)+0.5);
-        for(int i=0;i<img->cols;i++)
-        {
-            if(!bSection)
-            {
-                for(int j=0;j<img->rows;j++)
-                {
-                    val.append(img->at<float>(j,i));
-                    //cout << index<< "v "<<val << endl;
-                    count++;
-                }
-            }
-            else
-            {
-                val.append(img->at<float>(index,i));
-                // cout << index<< "v "<<val << endl;
-                count++;
-            }
-
-        }
-
-        res.append(val);
-        delete img;
-
-    }
-    return res;
-}
-
-
-
 QList<float> Merge::launchExtraction(QString filename,int section)
 {
 
@@ -1909,6 +1832,111 @@ int Merge::launch(SMergeOptions *options) throw(MergeException)
     }
 
     return 0;
+}
+
+void Merge::launchRatio(const QList<QString> *dirList,
+                        const QString targetDir,
+                        const QList<EMapType> *mapTypes,
+                        const bool section,
+                        const float secVal)
+{
+    QList<QList<QList<float>>> listRes1;
+    QList<QList<QList<float>>> listRes2;
+
+    for(EMapType type : (*mapTypes))
+    {
+        QList<QList<float>> lines1;
+        QList<QList<float>> lines2;
+
+        QList<QList<float>> res = computeRatio(dirList, type, section, secVal);
+
+        for(int i = 0; i < res.length()-1; i += 2)
+        {
+            QList<float> val1 = res.at(i);
+            QList<float> val2 = res.at(i+1);
+
+            QList<float> line1;
+            QList<float> line2;
+
+            for(int j = 0; j < val1.length(); ++j)
+            {
+                if(val1.at(j) && val2.at(j))
+                {
+                    float resu = val1.at(j) / val2.at(j);
+                    float resu2 = val2.at(j) / val1.at(j);
+                    line1.append(resu);
+                    line2.append(resu2);
+                }
+                else
+                {
+                    line1.append(0);
+                    line2.append(0);
+                }
+            }
+            lines1.append(line1);
+            lines2.append(line2);
+        }
+
+        listRes1.append(lines1);
+        listRes2.append(lines2);
+    }
+
+    cout <<" ... " << listRes1.length() << endl;
+    cout << " ... "<< listRes1.at(0).length() << endl;
+
+    if (section)
+    {
+        //saveRatioSection(lres,dirList_Tab->length()/2);
+        //saveRatioSection(lres2,dirList_Tab->length()/2,false);
+    }
+    else
+    {
+        //saveRatio(lres,dirList_Tab->length()/2);
+        //saveRatio(lres2,dirList_Tab->length()/2,false);
+    }
+}
+
+QList<QList<float>> Merge::computeRatio(const QList<QString>* dirList,
+                                        const EMapType type,
+                                        const bool section,
+                                        const float secVal)
+{
+    QList<QList<float>> res;
+
+    for(int i = 0; i < dirList->length(); ++i)
+    {
+        QDir dir(dirList->at(i));
+        QDir dirMaps = QDir(dir.path() + "/maps");
+
+        string filename = dirMaps.absolutePath().toStdString() + "/" + getMapFileName(type) + ".txt";
+        QList<Mat*>* listImg = FileManager::importMapWithMask(filename);
+
+        Mat* img = listImg->at(0);
+
+        QList<float> val;
+
+        int index = int(((secVal / 100.0) * img->rows) + 0.5);
+
+        for(int i = 0; i < img->cols; ++i)
+        {
+            if(!section)
+            {
+                for(int j = 0; j < img->rows; ++j)
+                {
+                    val.append(img->at<float>(j, i));
+                }
+            }
+            else
+            {
+                val.append(img->at<float>(index, i));
+            }
+        }
+
+        res.append(val);
+        delete img;
+    }
+
+    return res;
 }
 
 /**

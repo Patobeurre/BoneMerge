@@ -14,6 +14,7 @@ using namespace cv;
  * @param[in] map the matrix to export
  * @param[in] filepath the absolute path of the file
  * @return
+ * @throw MergeException
  */
 bool FileManager::exportMap(const Mat map, const string filepath)  throw(MergeException)
 {
@@ -49,6 +50,7 @@ bool FileManager::exportMap(const Mat map, const string filepath)  throw(MergeEx
  * @brief Read a map from the given filepath
  * @param[in] filepath the absolute path to file
  * @return the map lines
+ * @throw MergeException
  */
 QList<QStringList> FileManager::readMapFromFile(const string filepath) throw(MergeException)
 {
@@ -80,7 +82,7 @@ QList<QStringList> FileManager::readMapFromFile(const string filepath) throw(Mer
  * The mask share the same size and shape of the map.
  * The value of the mask is set to 0 if the associated map's value is "none"
  * or 255 otherwise.
- * @param[in] filepath
+ * @param[in] filepath the absolute path to file
  * @return a list which contains the map and it's mask.
  */
 QList<Mat*>* FileManager::importMapWithMask(const string filepath)
@@ -115,6 +117,12 @@ QList<Mat*>* FileManager::importMapWithMask(const string filepath)
     return list;
 }
 
+/**
+ * @brief Write data in file
+ * @param[in] data the data to write represented as a list of QString
+ * @param[in] filepath the absolute path to file
+ * @return
+ */
 bool FileManager::writeInFile(const QList<QString> *data, const string filepath)
 {
     QString filename = QString::fromStdString(filepath) + ".txt";
@@ -135,6 +143,11 @@ bool FileManager::writeInFile(const QList<QString> *data, const string filepath)
     return false;
 }
 
+/**
+ * @brief Read data from file
+ * @param[in] filepath the absolute path to file
+ * @return a list of words
+ */
 QList<QStringList> FileManager::readFromFile(const string filepath)
 {
     QList<QStringList> data;
@@ -158,6 +171,11 @@ QList<QStringList> FileManager::readFromFile(const string filepath)
     return data;
 }
 
+/**
+ * @brief Import a map from file
+ * @param[in] filepath the absolute path to file
+ * @return the map
+ */
 Mat* FileManager::importMap(const string filepath)
 {
     QList<QStringList> mat = readMapFromFile(filepath);

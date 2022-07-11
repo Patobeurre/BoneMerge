@@ -77,6 +77,24 @@ private:
     bool isLaunchNormEnable();
     bool isValidSelectedFolderNorm(QString dirPath);
 
+    /**
+     * TAB RATIO
+     */
+    QStandardItemModel* tabModelRatio;
+
+    QList<EMapType>* mapTypesRatio;
+    QList<QString>* dirListRatio;
+    QString saveDirRatio;
+    QString filenameRatio;
+    bool section;
+    float sectionValue;
+
+    bool isLaunchRatioEnable();
+    bool isValidSelectedFolderRatio(QString dirPath);
+
+    void updateMapTypesRatio(EMapType type, bool toAdd);
+
+
 private slots:
     /**
      * UI TAB MERGE
@@ -110,6 +128,24 @@ private slots:
     void on_btnRemoveFolderNorm_clicked();
     void on_btnBrowseSaveDirNorm_clicked();
     void on_btnLaunchNorm_clicked();
+
+    /**
+     * UI TAB RATIO
+     */
+    void on_cbSection_ratio_toggled(bool checked);
+    void on_sliderSection_ratio_sliderMoved(int position);
+    void on_sbSection_ratio_editingFinished();
+    void on_cbExtRadius_ratio_toggled(bool checked);
+    void on_cbCorticalThick_ratio_toggled(bool checked);
+    void on_cbExtCurv_ratio_toggled(bool checked);
+    void on_cbSecondMomentArea_ratio_toggled(bool checked);
+    void on_cbModulus_ratio_toggled(bool checked);
+    void on_lineEditFilename_ratio_editingFinished();
+    void on_lineEditSaveDir_ratio_editingFinished();
+    void on_btnBrowseSaveDir_ratio_clicked();
+    void on_btnAddSelectedFolder_ratio_clicked();
+    void on_btnRemoveSelectedFolder_ratio_clicked();
+    void on_btnLaunchRatio_clicked();
 };
 
 #endif // MAINWINDOW_H

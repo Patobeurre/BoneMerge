@@ -5,6 +5,12 @@
 #include <QMessageBox>
 
 
+/**
+ * @brief Constructor
+ * @details
+ * Initialize class variables and UI components
+ * @param parent
+ */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -21,6 +27,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     dirListNorm = new QList<QString>();
     saveDirNorm = "";
+
+    dirListRatio = new QList<QString>();
+    mapTypesRatio = new QList<EMapType>();
+    saveDirRatio = "";
+    section = false;
+    sectionValue = 0.0;
 
     try
     {
@@ -56,8 +68,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeSelectFolderNorm->setColumnHidden(3,true);
     ui->treeSelectFolderNorm->setSelectionMode(QAbstractItemView::MultiSelection);
 
+    tabModelRatio = new QStandardItemModel(0, 2, this);
+    tabModelRatio->setHorizontalHeaderItem(0, new QStandardItem(QString("Femur")));
+    tabModelRatio->setHorizontalHeaderItem(1, new QStandardItem(QString("Humerus")));
+    ui->tableViewSelectFolders_ratio->setModel(tabModelRatio);
+
     ui->btnLaunch->setEnabled(false);
     ui->btnLaunchNorm->setEnabled(false);
+    ui->btnLaunchRatio->setEnabled(false);
 
     ui->tabWidget->setCurrentIndex(0);
 
@@ -288,6 +306,14 @@ void MainWindow::addSelectedFolderNorm(QString str)
     dirListNorm->append(str);
 }
 
+/**
+ * @brief Check if minimum requiered informations are set for normalization process
+ * @details
+ * The minimum requiered informations are:
+ *  - at least one folder is selected.
+ *  - the save folder is set.
+ * @return true if the conditions are valid, false otherwise
+ */
 bool MainWindow::isLaunchNormEnable()
 {
     if (dirListNorm->isEmpty()) return false;
@@ -296,6 +322,14 @@ bool MainWindow::isLaunchNormEnable()
     return true;
 }
 
+/**
+ * @brief Check if a selected folder path for normalization leads to a valid analysis
+ * @details
+ * A folder is considered valid if it contains:
+ *  - at least one .txt file
+ * @param[in] dirPath the path to check
+ * @return true if the folder is valid, false otherwise
+ */
 bool MainWindow::isValidSelectedFolderNorm(QString dirPath)
 {
     QDir dir = QDir(dirPath);
@@ -347,6 +381,68 @@ void MainWindow::addSelectedFolder(QString str)
     dirList->append(str);
 
     updateThresholdMax();
+}
+
+/**
+ * @brief Check if minimum requiered informations are set for ratio process
+ * @details
+ * The minimum requiered informations are:
+ *  - at least one folder is selected.
+ *  - at least one map type is checked.
+ *  - the save folder is set.
+ * @return true if the conditions are valid, false otherwise
+ */
+bool MainWindow::isLaunchRatioEnable()
+{
+    if (dirListRatio->isEmpty()) return false;
+    if (mapTypesRatio->isEmpty()) return false;
+    if (saveDirRatio.isEmpty()) return false;
+
+    return true;
+}
+
+/**
+ * @brief Check if a selected folder path for ratio leads to a valid analysis
+ * @details
+ * A folder is considered valid if it contains:
+ *  - two folders named "maps"
+ *  - the "maps" folder contains at least one .png file
+ * @param[in] dirPath the path to check
+ * @return true if the folder is valid, false otherwise
+ */
+bool MainWindow::isValidSelectedFolderRatio(QString dirPath)
+{
+    QDir dirMaps = QDir(dirPath + "/maps");
+    if (!dirMaps.exists()) return false;
+
+    QStringList nameFilter;
+    nameFilter << "*.png";
+
+    QFileInfoList files = dirMaps.entryInfoList(nameFilter, QDir::Files);
+
+    return (files.count() > 0);
+}
+
+/**
+ * @brief Add or remove a type from the map type list
+ * @param[in] type the map type to update
+ * @param[in] toAdd specify if the type has to be added (true) or removed (false)
+ */
+void MainWindow::updateMapTypesRatio(EMapType type, bool toAdd)
+{
+    if (toAdd)
+    {
+        if (!mapTypesRatio->contains(type))
+            mapTypesRatio->append(type);
+    }
+    else
+    {
+        int index = mapTypesRatio->indexOf(type);
+        if (index >= 0)
+            mapTypesRatio->removeAt(index);
+    }
+
+    ui->btnLaunchRatio->setEnabled(isLaunchRatioEnable());
 }
 
 
@@ -631,4 +727,154 @@ void MainWindow::on_btnLaunchNorm_clicked()
                         QString::fromStdString(e.getDetails()));
     }
 
+}
+
+/**
+ * UI TAB RATIO SLOTS
+ */
+
+void MainWindow::on_cbSection_ratio_toggled(bool checked)
+{
+    section = checked;
+    ui->sliderSection_ratio->setEnabled(checked);
+    ui->sbSection_ratio->setEnabled(checked);
+}
+
+void MainWindow::on_sliderSection_ratio_sliderMoved(int position)
+{
+    sectionValue = (float) position;
+    ui->sbSection_ratio->setValue(sectionValue);
+}
+
+void MainWindow::on_sbSection_ratio_editingFinished()
+{
+    sectionValue = (float) ui->sbSection_ratio->value();
+    ui->sliderSection_ratio->setValue((int) sectionValue);
+}
+
+void MainWindow::on_cbExtRadius_ratio_toggled(bool checked)
+{
+    updateMapTypesRatio(EMapType::EXTERNAL_RADIUS, checked);
+}
+
+void MainWindow::on_cbCorticalThick_ratio_toggled(bool checked)
+{
+    updateMapTypesRatio(EMapType::CORTICAL_THICK, checked);
+}
+
+void MainWindow::on_cbExtCurv_ratio_toggled(bool checked)
+{
+    updateMapTypesRatio(EMapType::CURVATURE, checked);
+}
+
+void MainWindow::on_cbSecondMomentArea_ratio_toggled(bool checked)
+{
+    updateMapTypesRatio(EMapType::MOMENT_AREA, checked);
+}
+
+void MainWindow::on_cbModulus_ratio_toggled(bool checked)
+{
+    updateMapTypesRatio(EMapType::MODULUS, checked);
+}
+
+void MainWindow::on_lineEditFilename_ratio_editingFinished()
+{
+    filenameRatio = ui->lineEditFilename_ratio->text();
+}
+
+void MainWindow::on_lineEditSaveDir_ratio_editingFinished()
+{
+    saveDirRatio = ui->lineEditSaveDir_ratio->text();
+}
+
+void MainWindow::on_btnBrowseSaveDir_ratio_clicked()
+{
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::Directory);
+    QString dirName;
+    dirName = dialog.getExistingDirectory();
+
+    if(dirName == "") return;
+
+    QDir dir = QDir(dirName);
+
+    saveDirRatio = dir.absolutePath();
+
+    ui->lineEditSaveDir_ratio->setText(dir.absolutePath());
+    ui->btnLaunchRatio->setEnabled(isLaunchRatioEnable());
+}
+
+void MainWindow::on_btnAddSelectedFolder_ratio_clicked()
+{
+    QFileDialog dialog;
+    QList<QStandardItem*> list;
+
+    dialog.setFileMode(QFileDialog::Directory);
+
+    QString dirName;
+    dirName = dialog.getExistingDirectory();
+
+    if (!isValidSelectedFolderRatio(dirName))
+    {
+        displayErrorBox("Error",
+                        "Missing Files <i>.png</i> missing.",
+                        "At location: " + dirName);
+        return;
+    }
+
+    QString dirName_2;
+    dirName_2 = dialog.getExistingDirectory();
+
+    if (!isValidSelectedFolderRatio(dirName_2))
+    {
+        displayErrorBox("Error",
+                        "Missing Files <i>.png</i> missing.",
+                        "At location: " + dirName_2);
+        return;
+    }
+
+    QDir dir1(dirName);
+    QDir dir2(dirName_2);
+
+    list.append(new QStandardItem(dir1.dirName()));
+    list.append(new QStandardItem(dir2.dirName()));
+
+    tabModelRatio->appendRow(list);
+    dirListRatio->append(dirName);
+    dirListRatio->append(dirName_2);
+
+    ui->btnLaunchRatio->setEnabled(isLaunchRatioEnable());
+}
+
+void MainWindow::on_btnRemoveSelectedFolder_ratio_clicked()
+{
+    QModelIndexList list = ui->tableViewSelectFolders_ratio->selectionModel()->selectedIndexes();
+
+    for(int i = 0; i < list.length(); ++i)
+    {
+        ui->tableViewSelectFolders_ratio->model()->removeRow(list.at(i).row());
+        dirListRatio->removeAt(list.at(i).row() * 2);
+        dirListRatio->removeAt(list.at(i).row() * 2);
+    }
+
+    ui->btnLaunchRatio->setEnabled(isLaunchRatioEnable());
+}
+
+void MainWindow::on_btnLaunchRatio_clicked()
+{
+    if (!isLaunchRatioEnable())
+    {
+        return;
+    }
+
+    try
+    {
+        merge.launchRatio(dirListRatio, saveDirRatio, mapTypesRatio, section, sectionValue);
+    }
+    catch (MergeException &e)
+    {
+        displayErrorBox(QString::fromStdString(e.getTitle()),
+                        QString::fromStdString(e.getMessage()),
+                        QString::fromStdString(e.getDetails()));
+    }
 }
