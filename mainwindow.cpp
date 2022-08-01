@@ -112,6 +112,18 @@ void MainWindow::displayWarningBox(const QString title, const QString msg, const
 }
 
 /**
+ * @brief Display an information message window
+ * @param[in] title the window's title
+ * @param[in] msg the main message
+ * @param[in] details the additionnal detailed message
+ */
+void MainWindow::displayInformationBox(const QString title, const QString msg, const QString details)
+{
+    QMessageBox msgBox;
+    msgBox.information(0, title, msg + "\n\n" + details);
+}
+
+/**
  * @brief Update the maximum value authorized for the threshold option
  * @details
  * The threshold value must be between 1 and the number of selected folders
@@ -469,6 +481,7 @@ void MainWindow::on_btnLaunch_clicked()
         displayWarningBox(QString::fromStdString(e.getTitle()),
                           QString::fromStdString(e.getMessage()),
                           QString::fromStdString(e.getDetails()));
+        return;
     }
 
     try
@@ -481,8 +494,10 @@ void MainWindow::on_btnLaunch_clicked()
         displayErrorBox(QString::fromStdString(e.getTitle()),
                       QString::fromStdString(e.getMessage()),
                       QString::fromStdString(e.getDetails()));
+        return;
     }
 
+    displayInformationBox("Done", "Process finished successfuly!", "");
 }
 
 
@@ -725,8 +740,10 @@ void MainWindow::on_btnLaunchNorm_clicked()
         displayErrorBox(QString::fromStdString(e.getTitle()),
                         QString::fromStdString(e.getMessage()),
                         QString::fromStdString(e.getDetails()));
+        return;
     }
 
+    displayInformationBox("Done", "Process finished successfuly!", "");
 }
 
 /**
@@ -876,5 +893,8 @@ void MainWindow::on_btnLaunchRatio_clicked()
         displayErrorBox(QString::fromStdString(e.getTitle()),
                         QString::fromStdString(e.getMessage()),
                         QString::fromStdString(e.getDetails()));
+        return;
     }
+
+    displayInformationBox("Done", "Process finished successfuly!", "");
 }

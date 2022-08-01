@@ -27,7 +27,7 @@ bool FileManager::exportMap(const Mat map, const string filepath)  throw(MergeEx
             for (int i = 0; i < map.cols; i++)
             {
                 float val = map.at<float>(j, i);
-                if (val > MASK_MIN)
+                if (val == MASK_MAX)
                     out << map.at<float>(j, i) << " ";
                 else
                     out << "none" << " ";

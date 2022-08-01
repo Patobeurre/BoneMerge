@@ -1837,8 +1837,8 @@ int Merge::launch(SMergeOptions *options) throw(MergeException)
 void Merge::launchRatio(const QList<QString> *dirList,
                         const QString targetDir,
                         const QList<EMapType> *mapTypes,
-                        const bool section,
-                        const float secVal)
+                        const bool section /* = false */,
+                        const float secVal /* = 0 */)
 {
     QList<QList<QList<float>>> listRes1;
     QList<QList<QList<float>>> listRes2;
@@ -1898,8 +1898,8 @@ void Merge::launchRatio(const QList<QString> *dirList,
 
 QList<QList<float>> Merge::computeRatio(const QList<QString>* dirList,
                                         const EMapType type,
-                                        const bool section,
-                                        const float secVal)
+                                        const bool section /* = false */,
+                                        const float secVal /* = 0 */)
 {
     QList<QList<float>> res;
 
@@ -2032,7 +2032,12 @@ QList<QString> Merge::getSimilarFilenames(const QList<QString> *directories)
     QFileInfoList files = dir.entryInfoList(nameFilter, QDir::Files);
     for (QFileInfo fileInfo : files)
     {
-        filenames.append(fileInfo.baseName());
+        QString filename = fileInfo.baseName();
+
+        if (!filename.contains(QString::fromStdString(EXTENSION_NORM)))
+        {
+            filenames.append(filename);
+        }
     }
 
     for (QString directory : *(directories))
